@@ -7,6 +7,7 @@ import { Product, RecipeProduct } from '@/lib/types';
 import { calculateTotalGrams, calculateTotalPPM, formatNumber, sortProductsByNutrients, getElementTolerance, formatPPM } from '@/lib/utils';
 import { useToast } from '@/components/Toast';
 import MultiSelect from '@/components/MultiSelect';
+import Accordion from '@/components/Accordion';
 
 interface RecipeProductLocal extends Omit<RecipeProduct, 'id' | 'recipe_id'> {
   id?: string;
@@ -49,6 +50,26 @@ function NewRecipeContent() {
 
   const [selectedProductId, setSelectedProductId] = useState('');
   const [gramsPerLiter, setGramsPerLiter] = useState<number>(0);
+
+  // Estado para controlar seções expandidas/colapsadas
+  const [expandedSections, setExpandedSections] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('recipe-form-sections-state');
+      return saved ? JSON.parse(saved) : { details: true, targets: true, products: true };
+    }
+    return { details: true, targets: true, products: true };
+  });
+
+  // Salvar preferências no localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('recipe-form-sections-state', JSON.stringify(expandedSections));
+    }
+  }, [expandedSections]);
+
+  const toggleSection = (section: 'details' | 'targets' | 'products') => {
+    setExpandedSections((prev: any) => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const loadProducts = useCallback(async () => {
     const { data, error } = await supabase
@@ -321,89 +342,100 @@ function NewRecipeContent() {
         </h1>
       </div>
 
-      <form onSubmit={handleSaveRecipe} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">Nome da Receita</label>
-            <input
-              type="text"
-              value={recipeData.name}
-              onChange={(e) => setRecipeData({ ...recipeData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              required
-            />
+      <form onSubmit={handleSaveRecipe} className="space-y-0">
+        {/* Seção 1: Detalhes da Receita */}
+        <Accordion
+          title="1. Detalhes da Receita"
+          isExpanded={expandedSections.details}
+          onToggle={() => toggleSection('details')}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">Nome da Receita</label>
+              <input
+                type="text"
+                value={recipeData.name}
+                onChange={(e) => setRecipeData({ ...recipeData, name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">Total de Litros</label>
+              <input
+                type="number"
+                step="0.01"
+                value={recipeData.total_liters}
+                onChange={(e) => setRecipeData({ ...recipeData, total_liters: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">EC</label>
+              <input
+                type="number"
+                step="0.01"
+                value={recipeData.ec}
+                onChange={(e) => setRecipeData({ ...recipeData, ec: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">pH</label>
+              <input
+                type="number"
+                step="0.01"
+                value={recipeData.ph}
+                onChange={(e) => setRecipeData({ ...recipeData, ph: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+                Senha (opcional)
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Para proteger edição e exclusão</span>
+              </label>
+              <input
+                type="password"
+                value={recipeData.password}
+                onChange={(e) => setRecipeData({ ...recipeData, password: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Deixe em branco se não quiser proteger"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+                Proprietário (opcional)
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Ex: @joao, @maria123</span>
+              </label>
+              <input
+                type="text"
+                value={recipeData.owner}
+                onChange={(e) => setRecipeData({ ...recipeData, owner: e.target.value.trim() })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Digite o nome do proprietário"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <MultiSelect
+                label="Tipo de Receita (opcional)"
+                options={['vega', 'flora', 'clone', 'madre']}
+                selectedValues={recipeData.recipe_types}
+                onChange={(selected) => setRecipeData({ ...recipeData, recipe_types: selected })}
+                placeholder="Selecione os tipos de receita"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">Total de Litros</label>
-            <input
-              type="number"
-              step="0.01"
-              value={recipeData.total_liters}
-              onChange={(e) => setRecipeData({ ...recipeData, total_liters: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">EC</label>
-            <input
-              type="number"
-              step="0.01"
-              value={recipeData.ec}
-              onChange={(e) => setRecipeData({ ...recipeData, ec: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">pH</label>
-            <input
-              type="number"
-              step="0.01"
-              value={recipeData.ph}
-              onChange={(e) => setRecipeData({ ...recipeData, ph: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
-              Senha (opcional)
-              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Para proteger edição e exclusão</span>
-            </label>
-            <input
-              type="password"
-              value={recipeData.password}
-              onChange={(e) => setRecipeData({ ...recipeData, password: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Deixe em branco se não quiser proteger"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
-              Proprietário (opcional)
-              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Ex: @joao, @maria123</span>
-            </label>
-            <input
-              type="text"
-              value={recipeData.owner}
-              onChange={(e) => setRecipeData({ ...recipeData, owner: e.target.value.trim() })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Digite o nome do proprietário"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <MultiSelect
-              label="Tipo de Receita (opcional)"
-              options={['vega', 'flora', 'clone', 'madre']}
-              selectedValues={recipeData.recipe_types}
-              onChange={(selected) => setRecipeData({ ...recipeData, recipe_types: selected })}
-              placeholder="Selecione os tipos de receita"
-            />
-          </div>
-        </div>
+        </Accordion>
 
-        {/* PPM Alvo */}
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
-          <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">PPM Alvo (Opcional)</h3>
+        {/* Seção 2: PPM Alvo */}
+        <Accordion
+          title="2. PPM Alvo"
+          isExpanded={expandedSections.targets}
+          onToggle={() => toggleSection('targets')}
+          badge={Object.values(recipeData).filter((v, i) => i >= 5 && v !== undefined).length}
+        >
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Defina os valores alvo de PPM para cada elemento. Isso ajudará a visualizar o quanto falta para atingir seus objetivos.
           </p>
@@ -541,10 +573,17 @@ function NewRecipeContent() {
               />
             </div>
           </div>
-        </div>
+        </Accordion>
 
-        {/* Adicionar Produtos */}
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
+        {/* Seção 3: Produtos e Concentração */}
+        <Accordion
+          title="3. Produtos e Concentração"
+          isExpanded={expandedSections.products}
+          onToggle={() => toggleSection('products')}
+          badge={recipeProducts.length}
+        >
+          {/* Adicionar Produtos */}
+          <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Adicionar Produto</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
@@ -701,8 +740,9 @@ function NewRecipeContent() {
             </div>
           </div>
         )}
+        </Accordion>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-6">
           <button
             type="submit"
             disabled={loading}

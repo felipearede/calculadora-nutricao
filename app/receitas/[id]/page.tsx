@@ -8,6 +8,7 @@ import { calculateTotalGrams, calculateTotalPPM, formatNumber, sortProductsByNut
 import { useToast } from '@/components/Toast';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { useGlobalPassword } from '@/contexts/GlobalPasswordContext';
+import Accordion from '@/components/Accordion';
 
 interface RecipeProductLocal extends RecipeProduct {
   product: Product;
@@ -31,6 +32,26 @@ export default function RecipeDetailsPage() {
     action: 'edit' | 'delete';
   } | null>(null);
   const [passwordInput, setPasswordInput] = useState('');
+
+  // Estado para controlar seções expandidas/colapsadas
+  const [expandedSections, setExpandedSections] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('recipe-detail-sections-state');
+      return saved ? JSON.parse(saved) : { details: true, targets: false, products: true };
+    }
+    return { details: true, targets: false, products: true };
+  });
+
+  // Salvar preferências no localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('recipe-detail-sections-state', JSON.stringify(expandedSections));
+    }
+  }, [expandedSections]);
+
+  const toggleSection = (section: 'details' | 'targets' | 'products') => {
+    setExpandedSections((prev: any) => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const loadRecipeDetails = useCallback(async () => {
     setLoading(true);
@@ -268,9 +289,13 @@ export default function RecipeDetailsPage() {
         </div>
       </div>
 
-      {/* Informações Básicas */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Informações</h2>
+      {/* Seção 1: Detalhes da Receita */}
+      <Accordion
+        title="1. Detalhes da Receita"
+        isExpanded={expandedSections.details}
+        onToggle={() => toggleSection('details')}
+      >
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Informações</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Total de Litros</div>
@@ -320,9 +345,47 @@ export default function RecipeDetailsPage() {
             </div>
           </div>
         )}
-      </div>
+      </Accordion>
 
-      {/* Layout Responsivo: Produtos e PPM lado a lado no desktop */}
+      {/* Seção 2: PPM Alvo */}
+      {(recipe.target_n || recipe.target_p || recipe.target_k || recipe.target_ca || recipe.target_mg || recipe.target_s || recipe.target_fe || recipe.target_b || recipe.target_mn || recipe.target_zn || recipe.target_cu || recipe.target_mo) && (
+        <Accordion
+          title="2. PPM Alvo"
+          isExpanded={expandedSections.targets}
+          onToggle={() => toggleSection('targets')}
+          badge={[recipe.target_n, recipe.target_p, recipe.target_k, recipe.target_ca, recipe.target_mg, recipe.target_s, recipe.target_fe, recipe.target_b, recipe.target_mn, recipe.target_zn, recipe.target_cu, recipe.target_mo].filter(v => v !== undefined && v !== null).length}
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {['n', 'p', 'k', 'ca', 'mg', 's', 'fe', 'b', 'mn', 'zn', 'cu', 'mo'].map((element) => {
+              const targetKey = `target_${element}` as keyof typeof recipe;
+              const targetValue = recipe[targetKey] as number | undefined;
+
+              if (targetValue === undefined || targetValue === null) return null;
+
+              return (
+                <div key={element} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-center">
+                  <div className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">{element}</div>
+                  <div className="text-lg font-bold text-blue-700 dark:text-blue-400 mt-1">
+                    {formatPPM(targetValue, element)} ppm
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Alvo
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Accordion>
+      )}
+
+      {/* Seção 3: Produtos e Concentração */}
+      <Accordion
+        title="3. Produtos e Concentração"
+        isExpanded={expandedSections.products}
+        onToggle={() => toggleSection('products')}
+        badge={recipeProducts.length}
+      >
+        {/* Layout Responsivo: Produtos e PPM lado a lado no desktop */}
       <div className="grid lg:grid-cols-[1fr_400px] gap-6">
         {/* Coluna Esquerda: Produtos na Receita */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
@@ -432,6 +495,7 @@ export default function RecipeDetailsPage() {
           </div>
         </div>
       </div>
+      </Accordion>
 
       {/* Modal de Senha */}
       {passwordModal?.isOpen && recipe && (
