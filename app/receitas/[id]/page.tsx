@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Product, Recipe, RecipeProduct } from '@/lib/types';
-import { calculateTotalGrams, calculateTotalPPM, formatNumber, sortProductsByNutrients, calculatePricePerWeight, formatCurrency, getElementTolerance } from '@/lib/utils';
+import { calculateTotalGrams, calculateTotalPPM, formatNumber, sortProductsByNutrients, calculatePricePerWeight, formatCurrency, getElementTolerance, formatPPM } from '@/lib/utils';
 import { useToast } from '@/components/Toast';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { useGlobalPassword } from '@/contexts/GlobalPasswordContext';
@@ -392,12 +392,12 @@ export default function RecipeDetailsPage() {
               <div key={element} className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-center">
                 <div className="text-xs font-medium text-gray-600 dark:text-gray-300 uppercase">{element}</div>
                 <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
-                  {formatNumber(value)} ppm
+                  {formatPPM(value, element)} ppm
                 </div>
                 {targetValue !== undefined && (
                   <>
                     <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      Alvo: {formatNumber(targetValue)} ppm
+                      Alvo: {formatPPM(targetValue, element)} ppm
                     </div>
                     <div className={`text-sm font-semibold mt-1 ${
                       isWithinTolerance
@@ -406,10 +406,10 @@ export default function RecipeDetailsPage() {
                     }`}>
                       {diff !== null && (
                         isWithinTolerance
-                          ? `✓ ${diff >= 0 ? '+' : ''}${formatNumber(diff)}`
+                          ? `✓ ${diff >= 0 ? '+' : ''}${formatPPM(diff, element)}`
                           : diff < 0
-                            ? `- ${formatNumber(Math.abs(diff))} falta`
-                            : `+ ${formatNumber(diff)} a mais`
+                            ? `- ${formatPPM(Math.abs(diff), element)} falta`
+                            : `+ ${formatPPM(diff, element)} a mais`
                       )}
                     </div>
                   </>

@@ -157,7 +157,19 @@ export default function ReceitasPage() {
           ph: recipe.ph,
           password: null,  // Receita duplicada sempre sem senha
           owner: recipe.owner,  // Copiar owner da receita original
-          recipe_types: recipe.recipe_types  // Copiar tipos da receita original
+          recipe_types: recipe.recipe_types,  // Copiar tipos da receita original
+          target_n: recipe.target_n,
+          target_p: recipe.target_p,
+          target_k: recipe.target_k,
+          target_ca: recipe.target_ca,
+          target_mg: recipe.target_mg,
+          target_s: recipe.target_s,
+          target_b: recipe.target_b,
+          target_cu: recipe.target_cu,
+          target_fe: recipe.target_fe,
+          target_mn: recipe.target_mn,
+          target_zn: recipe.target_zn,
+          target_mo: recipe.target_mo
         }])
         .select()
         .single();

@@ -68,6 +68,31 @@ export function formatNumber(value: number | null | undefined): string {
 }
 
 /**
+ * Formata valores de PPM com precisão adequada ao tipo de nutriente
+ * Macronutrientes: 2 casas decimais
+ * Micronutrientes: até 7 casas decimais (remove zeros à direita)
+ *
+ * @param value - Valor a ser formatado
+ * @param element - Código do elemento (n, p, k, etc)
+ * @returns String formatada com a precisão apropriada
+ */
+export function formatPPM(value: number | null | undefined, element: string): string {
+  if (value === null || value === undefined || isNaN(value)) {
+    return isMacronutrient(element) ? '0.00' : '0.0000000';
+  }
+
+  if (isMacronutrient(element)) {
+    // Macronutrientes: 2 casas decimais
+    return value.toFixed(2);
+  } else {
+    // Micronutrientes: até 7 casas decimais, remove zeros à direita
+    const formatted = value.toFixed(7);
+    // Remove zeros desnecessários, mas mantém pelo menos uma casa decimal
+    return formatted.replace(/\.?0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
+  }
+}
+
+/**
  * Ordena produtos por sigla customizada
  * Ordem: NC, NP, MKP, SM, SP, Fe, B, Mn, Zn, Cu, Mo
  * Produtos não listados aparecem ao final, ordenados alfabeticamente
