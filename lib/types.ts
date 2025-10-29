@@ -1,6 +1,14 @@
 export interface Product {
   id: string;
   name: string;
+  marca: string;
+  sigla: string;
+  image_url?: string;
+  product_url?: string;
+  password?: string;
+  weight?: number;
+  weight_unit?: 'kg' | 'g' | 'mg' | 'L' | 'ml';
+  price?: number;
   n: number;  // Nitrogênio
   p: number;  // Fósforo
   k: number;  // Potássio
@@ -22,6 +30,21 @@ export interface Recipe {
   total_liters: number;
   ec: number;
   ph: number;
+  password?: string;
+  owner?: string;
+  recipe_types?: string[];
+  target_n?: number;
+  target_p?: number;
+  target_k?: number;
+  target_ca?: number;
+  target_mg?: number;
+  target_s?: number;
+  target_b?: number;
+  target_cu?: number;
+  target_fe?: number;
+  target_mn?: number;
+  target_zn?: number;
+  target_mo?: number;
   created_at?: string;
 }
 
@@ -40,10 +63,10 @@ export interface PPMCalculation {
   ca: number;
   mg: number;
   s: number;
-  b: number;
-  cu: number;
   fe: number;
+  b: number;
   mn: number;
   zn: number;
+  cu: number;
   mo: number;
 }
