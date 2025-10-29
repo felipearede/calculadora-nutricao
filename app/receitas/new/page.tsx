@@ -584,115 +584,120 @@ function NewRecipeContent() {
           </div>
         </div>
 
-        {/* Produtos Adicionados */}
+        {/* Layout Responsivo: Produtos e PPM lado a lado no desktop */}
         {recipeProducts.length > 0 && (
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Produtos na Receita</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-blue-100 dark:bg-blue-900">
-                  <tr>
-                    <SortableHeader column="name" label="Produto" />
-                    <SortableHeader column="marca" label="Marca" />
-                    <SortableHeader column="sigla" label="Sigla" />
-                    <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">g/L</th>
-                    <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">Gramas Totais</th>
-                    <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedRecipeProducts.map((rp) => (
-                    <tr key={rp.product_id} className="border-t border-gray-200 dark:border-gray-700">
-                      <td className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">
-                        {rp.product.name}
-                      </td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                        {rp.product.marca}
-                      </td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                        {rp.product.sigla}
-                      </td>
-                      <td className="px-4 py-2">
-                        <input
-                          type="number"
-                          step="0.0000001"
-                          value={rp.grams_per_liter}
-                          onChange={(e) => updateProductGramsPerLiter(rp.product_id, e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
-                          className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                      </td>
-                      <td className="px-4 py-2 text-center font-medium text-gray-900 dark:text-gray-100">
-                        {formatNumber(calculateTotalGrams(recipeData.total_liters, rp.grams_per_liter))}g
-                      </td>
-                      <td className="px-4 py-2 text-center">
-                        <button
-                          type="button"
-                          onClick={() => removeProductFromRecipe(rp.product_id)}
-                          className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition text-xl"
-                          title="Remover produto"
-                        >
-                          🗑️
-                        </button>
-                      </td>
+          <div className="grid lg:grid-cols-[1fr_400px] gap-6">
+            {/* Coluna Esquerda: Produtos Adicionados */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Produtos na Receita</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-blue-100 dark:bg-blue-900">
+                    <tr>
+                      <SortableHeader column="name" label="Produto" />
+                      <SortableHeader column="marca" label="Marca" />
+                      <SortableHeader column="sigla" label="Sigla" />
+                      <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">g/L</th>
+                      <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">Gramas Totais</th>
+                      <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {sortedRecipeProducts.map((rp) => (
+                      <tr key={rp.product_id} className="border-t border-gray-200 dark:border-gray-700">
+                        <td className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">
+                          {rp.product.name}
+                        </td>
+                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                          {rp.product.marca}
+                        </td>
+                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                          {rp.product.sigla}
+                        </td>
+                        <td className="px-4 py-2">
+                          <input
+                            type="number"
+                            step="0.0000001"
+                            value={rp.grams_per_liter}
+                            onChange={(e) => updateProductGramsPerLiter(rp.product_id, e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
+                            className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </td>
+                        <td className="px-4 py-2 text-center font-medium text-gray-900 dark:text-gray-100">
+                          {formatNumber(calculateTotalGrams(recipeData.total_liters, rp.grams_per_liter))}g
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => removeProductFromRecipe(rp.product_id)}
+                            className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition text-xl"
+                            title="Remover produto"
+                          >
+                            🗑️
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Tabela PPM */}
-        {recipeProducts.length > 0 && (
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Concentração por Elemento (PPM)</h3>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-              {['n', 'p', 'k', 'ca', 'mg', 's', 'fe', 'b', 'mn', 'zn', 'cu', 'mo'].map((element) => {
-                const value = ppmData[element as keyof typeof ppmData];
-                const products = getProductsForElement(element);
-                const targetKey = `target_${element}` as keyof typeof recipeData;
-                const targetValue = recipeData[targetKey] as number | undefined;
-                const diff = targetValue !== undefined ? value - targetValue : null;
-                const tolerance = getElementTolerance(element);
-                const isWithinTolerance = diff !== null && Math.abs(diff) <= tolerance;
+            {/* Coluna Direita: Tabela PPM (Sticky no Desktop) */}
+            <div className="lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-80px)]">
+              <div className="border-t border-gray-200 dark:border-gray-700 lg:border-t-0 pt-4 lg:pt-0">
+                <div className="bg-white dark:bg-gray-800 lg:border lg:border-gray-200 lg:dark:border-gray-700 lg:rounded-lg lg:p-4 lg:shadow-lg">
+                  <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Concentração (PPM)</h3>
+                  <div className="grid grid-cols-2 gap-2 lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-2">
+                    {['n', 'p', 'k', 'ca', 'mg', 's', 'fe', 'b', 'mn', 'zn', 'cu', 'mo'].map((element) => {
+                      const value = ppmData[element as keyof typeof ppmData];
+                      const products = getProductsForElement(element);
+                      const targetKey = `target_${element}` as keyof typeof recipeData;
+                      const targetValue = recipeData[targetKey] as number | undefined;
+                      const diff = targetValue !== undefined ? value - targetValue : null;
+                      const tolerance = getElementTolerance(element);
+                      const isWithinTolerance = diff !== null && Math.abs(diff) <= tolerance;
 
-                return (
-                  <div key={element} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-center">
-                    <div className="text-xs font-medium text-gray-600 dark:text-gray-300 uppercase">{element}</div>
-                    <div className="text-lg font-bold text-blue-700 dark:text-blue-400">
-                      {formatPPM(value, element)} ppm
-                    </div>
-                    {targetValue !== undefined && (
-                      <>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-400 mt-0.5">
-                          Alvo: {formatPPM(targetValue, element)} ppm
-                        </div>
-                        <div className={`text-xs font-semibold mt-0.5 ${
-                          isWithinTolerance
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-red-600 dark:text-red-400'
-                        }`}>
-                          {diff !== null && (
-                            isWithinTolerance
-                              ? `✓ ${diff >= 0 ? '+' : ''}${formatPPM(diff, element)}`
-                              : diff < 0
-                                ? `- ${formatPPM(Math.abs(diff), element)} falta`
-                                : `+ ${formatPPM(diff, element)} a mais`
+                      return (
+                        <div key={element} className="bg-gray-100 dark:bg-gray-700 p-2.5 rounded-lg text-center">
+                          <div className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">{element}</div>
+                          <div className="text-base font-bold text-blue-700 dark:text-blue-400 mt-0.5">
+                            {formatPPM(value, element)} ppm
+                          </div>
+                          {targetValue !== undefined && (
+                            <>
+                              <div className="text-[10px] text-gray-600 dark:text-gray-400 mt-0.5">
+                                Alvo: {formatPPM(targetValue, element)} ppm
+                              </div>
+                              <div className={`text-xs font-semibold mt-0.5 ${
+                                isWithinTolerance
+                                  ? 'text-green-600 dark:text-green-400'
+                                  : 'text-red-600 dark:text-red-400'
+                              }`}>
+                                {diff !== null && (
+                                  isWithinTolerance
+                                    ? `✓ ${diff >= 0 ? '+' : ''}${formatPPM(diff, element)}`
+                                    : diff < 0
+                                      ? `- ${formatPPM(Math.abs(diff), element)} falta`
+                                      : `+ ${formatPPM(diff, element)} a mais`
+                                )}
+                              </div>
+                            </>
+                          )}
+                          {products.length > 0 && (
+                            <div
+                              className="text-[9px] text-gray-700 dark:text-gray-200 mt-1 truncate leading-tight font-medium"
+                              title={products.join(', ')}
+                            >
+                              {products.join(', ')}
+                            </div>
                           )}
                         </div>
-                      </>
-                    )}
-                    {products.length > 0 && (
-                      <div
-                        className="text-[10px] text-gray-700 dark:text-gray-200 mt-1 truncate leading-tight font-medium"
-                        title={products.join(', ')}
-                      >
-                        {products.join(', ')}
-                      </div>
-                    )}
+                      );
+                    })}
                   </div>
-                );
-              })}
+                </div>
+              </div>
             </div>
           </div>
         )}

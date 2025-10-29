@@ -322,109 +322,114 @@ export default function RecipeDetailsPage() {
         )}
       </div>
 
-      {/* Produtos na Receita */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Produtos na Receita</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-blue-100 dark:bg-blue-900">
-              <tr>
-                <SortableHeader column="name" label="Produto" />
-                <SortableHeader column="marca" label="Marca" />
-                <SortableHeader column="sigla" label="Sigla" />
-                <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">g/L</th>
-                <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">Gramas Totais</th>
-                <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">Valor p/ Elemento</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedRecipeProducts.map((rp) => {
-                const pricePerWeight = calculatePricePerWeight(
-                  rp.product.price,
-                  rp.product.weight,
-                  rp.product.weight_unit
-                );
-                const totalGrams = calculateTotalGrams(recipe.total_liters, rp.grams_per_liter);
-                const productCost = pricePerWeight ? pricePerWeight.value * totalGrams : null;
+      {/* Layout Responsivo: Produtos e PPM lado a lado no desktop */}
+      <div className="grid lg:grid-cols-[1fr_400px] gap-6">
+        {/* Coluna Esquerda: Produtos na Receita */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Produtos na Receita</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-blue-100 dark:bg-blue-900">
+                <tr>
+                  <SortableHeader column="name" label="Produto" />
+                  <SortableHeader column="marca" label="Marca" />
+                  <SortableHeader column="sigla" label="Sigla" />
+                  <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">g/L</th>
+                  <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">Gramas Totais</th>
+                  <th className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">Valor p/ Elemento</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedRecipeProducts.map((rp) => {
+                  const pricePerWeight = calculatePricePerWeight(
+                    rp.product.price,
+                    rp.product.weight,
+                    rp.product.weight_unit
+                  );
+                  const totalGrams = calculateTotalGrams(recipe.total_liters, rp.grams_per_liter);
+                  const productCost = pricePerWeight ? pricePerWeight.value * totalGrams : null;
+
+                  return (
+                    <tr key={rp.id} className="border-t border-gray-200 dark:border-gray-700">
+                      <td className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">
+                        {rp.product.name}
+                      </td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                        {rp.product.marca}
+                      </td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                        {rp.product.sigla}
+                      </td>
+                      <td className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">
+                        {rp.grams_per_liter}
+                      </td>
+                      <td className="px-4 py-2 text-center font-medium text-gray-900 dark:text-gray-100">
+                        {formatNumber(totalGrams)}g
+                      </td>
+                      <td className="px-4 py-2 text-center font-medium text-green-700 dark:text-green-400">
+                        {productCost !== null ? formatCurrency(productCost) : '-'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Coluna Direita: Tabela PPM (Sticky no Desktop) */}
+        <div className="lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-80px)]">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Concentração (PPM)</h2>
+            <div className="grid grid-cols-2 gap-2 lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-2">
+              {['n', 'p', 'k', 'ca', 'mg', 's', 'fe', 'b', 'mn', 'zn', 'cu', 'mo'].map((element) => {
+                const value = ppmData[element as keyof typeof ppmData];
+                const products = getProductsForElement(element);
+                const targetKey = `target_${element}` as keyof typeof recipe;
+                const targetValue = recipe[targetKey] as number | undefined;
+                const diff = targetValue !== undefined ? value - targetValue : null;
+                const tolerance = getElementTolerance(element);
+                const isWithinTolerance = diff !== null && Math.abs(diff) <= tolerance;
 
                 return (
-                  <tr key={rp.id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">
-                      {rp.product.name}
-                    </td>
-                    <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                      {rp.product.marca}
-                    </td>
-                    <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                      {rp.product.sigla}
-                    </td>
-                    <td className="px-4 py-2 text-center text-gray-900 dark:text-gray-100">
-                      {rp.grams_per_liter}
-                    </td>
-                    <td className="px-4 py-2 text-center font-medium text-gray-900 dark:text-gray-100">
-                      {formatNumber(totalGrams)}g
-                    </td>
-                    <td className="px-4 py-2 text-center font-medium text-green-700 dark:text-green-400">
-                      {productCost !== null ? formatCurrency(productCost) : '-'}
-                    </td>
-                  </tr>
+                  <div key={element} className="bg-gray-100 dark:bg-gray-700 p-2.5 rounded-lg text-center">
+                    <div className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">{element}</div>
+                    <div className="text-base font-bold text-blue-700 dark:text-blue-400 mt-0.5">
+                      {formatPPM(value, element)} ppm
+                    </div>
+                    {targetValue !== undefined && (
+                      <>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 mt-0.5">
+                          Alvo: {formatPPM(targetValue, element)} ppm
+                        </div>
+                        <div className={`text-xs font-semibold mt-0.5 ${
+                          isWithinTolerance
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {diff !== null && (
+                            isWithinTolerance
+                              ? `✓ ${diff >= 0 ? '+' : ''}${formatPPM(diff, element)}`
+                              : diff < 0
+                                ? `- ${formatPPM(Math.abs(diff), element)} falta`
+                                : `+ ${formatPPM(diff, element)} a mais`
+                          )}
+                        </div>
+                      </>
+                    )}
+                    {products.length > 0 && (
+                      <div
+                        className="text-[9px] text-gray-700 dark:text-gray-200 mt-1 truncate leading-tight font-medium"
+                        title={products.join(', ')}
+                      >
+                        {products.join(', ')}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Tabela PPM */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Concentração por Elemento (PPM)</h2>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-          {['n', 'p', 'k', 'ca', 'mg', 's', 'fe', 'b', 'mn', 'zn', 'cu', 'mo'].map((element) => {
-            const value = ppmData[element as keyof typeof ppmData];
-            const products = getProductsForElement(element);
-            const targetKey = `target_${element}` as keyof typeof recipe;
-            const targetValue = recipe[targetKey] as number | undefined;
-            const diff = targetValue !== undefined ? value - targetValue : null;
-            const tolerance = getElementTolerance(element);
-            const isWithinTolerance = diff !== null && Math.abs(diff) <= tolerance;
-
-            return (
-              <div key={element} className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-center">
-                <div className="text-xs font-medium text-gray-600 dark:text-gray-300 uppercase">{element}</div>
-                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
-                  {formatPPM(value, element)} ppm
-                </div>
-                {targetValue !== undefined && (
-                  <>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      Alvo: {formatPPM(targetValue, element)} ppm
-                    </div>
-                    <div className={`text-sm font-semibold mt-1 ${
-                      isWithinTolerance
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {diff !== null && (
-                        isWithinTolerance
-                          ? `✓ ${diff >= 0 ? '+' : ''}${formatPPM(diff, element)}`
-                          : diff < 0
-                            ? `- ${formatPPM(Math.abs(diff), element)} falta`
-                            : `+ ${formatPPM(diff, element)} a mais`
-                      )}
-                    </div>
-                  </>
-                )}
-                {products.length > 0 && (
-                  <div
-                    className="text-[10px] text-gray-700 dark:text-gray-200 mt-1 truncate leading-tight font-medium"
-                    title={products.join(', ')}
-                  >
-                    {products.join(', ')}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+            </div>
+          </div>
         </div>
       </div>
 
